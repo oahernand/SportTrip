@@ -3,31 +3,20 @@ package com.example.ahernandez.sporttrip
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.ahernandez.sporttrip.model.Game
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : AppCompatActivity() {
+class SearchActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
-    lateinit var gameList: ArrayList<Game>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Load in .csv file
-        val utils = Utils()
-        gameList = utils.parseCsvFromAssets(this, "Games.csv")!!
-
-
-        if (gameList != null) {
-            println("The total # of loaded games is " + gameList.size.toString())
-        }
+        setContentView(R.layout.activity_search)
 
 
         // Set Main as selected navigation item
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
-        bottomNavigationView.setSelectedItemId(R.id.navigationHome)
+        bottomNavigationView.setSelectedItemId(R.id.navigationSearch)
 
         // Check which item in custom navigator is selected
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
@@ -35,15 +24,13 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
 
                 R.id.navigationHome -> {
-                    return@setOnNavigationItemSelectedListener true
-                }
-
-                R.id.navigationSearch -> {
-                    val intent = Intent(this, SearchActivity::class.java)
+                    val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                     overridePendingTransition(0, 0)
                     finish()
+                }
 
+                R.id.navigationSearch -> {
                     return@setOnNavigationItemSelectedListener true
                 }
 
@@ -71,11 +58,6 @@ class MainActivity : AppCompatActivity() {
         } // END setOnNavigationItemSelectedListener
 
 
+    }
 
-    } // END onCreate()
-
-
-
-
-
-} // END MainActivity class
+}
