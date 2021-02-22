@@ -4,4 +4,6 @@
     <string name="search">Search</string>
     <string name="watch">Watch</string>
     <string name="settings">Settings</string>
+    <string name="leaguesHeader">Leagues</string>
+    <string name="findMatches">Find Matches</string>
 </resources>
