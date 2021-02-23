@@ -1,8 +1,9 @@
 package com.example.ahernandez.sporttrip
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.example.ahernandez.sporttrip.model.Game
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
@@ -11,15 +12,30 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import org.json.JSONObject
+
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var mapViewGoogle: MapView
+    private lateinit var allGamesArray: ArrayList<Game>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+        // Retrieve data passed in w Intent
+        var leagueName: String? = getIntent().getStringExtra("leagueName")
+        var jsonList: String? = getIntent().getStringExtra("gameList")
+
+        // Use GSON library to convert json to ArrayList
+        val gson = Gson()
+        val arrayTutorialType = object : TypeToken<ArrayList<Game>>() {}.type
+        allGamesArray = gson.fromJson(jsonList, arrayTutorialType)
+
 
         // *** IMPORTANT ***
         // MapView requires that the Bundle you pass contain _ONLY_ MapView SDK
@@ -78,43 +94,53 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY) ?: Bundle().also {
-            outState.putBundle(MAPVIEW_BUNDLE_KEY, it)
-        }
-        mapViewGoogle.onSaveInstanceState(mapViewBundle)
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        mapViewGoogle.onResume()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        mapViewGoogle.onStart()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        mapViewGoogle.onStop()
-    }
-
-    // TODO: Set it to work from info passed in SearchActivity
     override fun onMapReady(map: GoogleMap?) {
+
+        // Load the Teams data and store as a JSON Object
+        val utils = Utils()
+        val teamsJson = utils.loadJsonFromAssets(this, "teams.json")
+        val jsonObj = JSONObject(teamsJson)
 
         if (map != null) {
 
-            //map.addMarker(MarkerOptions().position(LatLng(36.15917, -86.77861)).title("Marker"))
-            //map.addMarker(MarkerOptions().position(LatLng(45.29694, -75.92722)).title("Marker"))
-
             val builder = LatLngBounds.Builder()
 
-            // Calculate the min and max bounds containing all markers
-            builder.include(map.addMarker(MarkerOptions().position(LatLng(36.15917, -86.77861)).title("Marker")).getPosition())
-            builder.include(map.addMarker(MarkerOptions().position(LatLng(45.29694, -75.92722)).title("Marker")).getPosition())
+            // Iterate through selected games
+            for (game in allGamesArray) {
+
+                // IF home team/arena match is found
+                if(jsonObj.has(game.home)) {
+
+                    // Retrieve specific arena entry and value string(properties)
+                    var arenaString: String? = jsonObj[game.home].toString()
+                    var arenaInfo: ArrayList<String>? = arenaString?.split(":") as ArrayList<String>?
+
+                    // Remove 1st index as not required
+                    arenaInfo?.removeAt(0)
+
+                    // Clean data - ArenaName[0]/Lat[1]/Long[2]
+                    if (arenaInfo != null) {
+                        for (i in arenaInfo.indices) {
+                            arenaInfo[i] = arenaInfo[i].substringBefore(",").substringBefore("}").replace("\"","")
+                        }
+                    }
+
+                    // Add marker to map
+                    builder.include(
+                        map.addMarker(
+                            arenaInfo?.get(1)?.toDouble()?.let { LatLng(it, arenaInfo?.get(2).toDouble()) }?.let {
+                                MarkerOptions().position(it).title(
+                                    arenaInfo?.get(0)
+                                )
+                            }
+                        ).getPosition()
+                    )
+
+                }
+
+            } // END FOR Loop
+
+
             val bounds = builder.build()
 
             // Set padding so that all markers are visible when zoom is set
@@ -126,9 +152,42 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             val cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding)
             map.animateCamera(cu)
 
-        }
+        } // END IF
+
 
     } // END onMapReady()
+
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val mapViewBundle = outState.getBundle(MAPVIEW_BUNDLE_KEY) ?: Bundle().also {
+            outState.putBundle(MAPVIEW_BUNDLE_KEY, it)
+        }
+        mapViewGoogle.onSaveInstanceState(mapViewBundle)
+
+    } // END onSaveInstanceState()
+
+
+    override fun onResume() {
+        super.onResume()
+        mapViewGoogle.onResume()
+    }
+
+
+
+    override fun onStart() {
+        super.onStart()
+        mapViewGoogle.onStart()
+    }
+
+
+
+    override fun onStop() {
+        super.onStop()
+        mapViewGoogle.onStop()
+    }
+
 
 
     override fun onPause() {

@@ -12,7 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SportTrip">
-        <activity android:name=".MapActivity"></activity>
+
+        <activity android:name=".MapActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".WatchActivity"
             android:screenOrientation="portrait"

@@ -49,4 +49,7 @@ dependencies {
 
     //gradle groovy DSL
     implementation 'com.github.doyaaaaaken:kotlin-csv-jvm:0.15.0'
+
+    // GSON
+    implementation 'com.google.code.gson:gson:2.8.6'
 }

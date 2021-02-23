@@ -2,6 +2,7 @@ package com.example.ahernandez.sporttrip.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,10 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ahernandez.sporttrip.MapActivity
 import com.example.ahernandez.sporttrip.R
+import com.example.ahernandez.sporttrip.Utils
+import com.example.ahernandez.sporttrip.model.Game
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 
 
 class LeagueItemAdapter(val context: Context, val items: ArrayList<String>):
@@ -18,9 +23,9 @@ class LeagueItemAdapter(val context: Context, val items: ArrayList<String>):
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
-            LayoutInflater.from(context).inflate(
-                R.layout.league_item_layout, parent, false
-            )
+                LayoutInflater.from(context).inflate(
+                        R.layout.league_item_layout, parent, false
+                )
         )
 
     } // END onCreateViewHolder()
@@ -38,20 +43,21 @@ class LeagueItemAdapter(val context: Context, val items: ArrayList<String>):
         // TODO: Possibly remove
         if (position % 2 == 0) {
             holder.cardViewItem.setBackgroundColor(
-                ContextCompat.getColor(
-                    context, R.color.SlateGrey
-                )
+                    ContextCompat.getColor(
+                            context, R.color.SlateGrey
+                    )
             )
         } else {
             holder.cardViewItem.setBackgroundColor(
-                ContextCompat.getColor(
-                    context, R.color.SlateGrey
-                )
+                    ContextCompat.getColor(
+                            context, R.color.SlateGrey
+                    )
             )
         }
 
 
         // TODO: CHANGE TO TRIGGERING CalenderView
+        // TODO: REMOVE HARDCODED DATA PASSED TO ACTIVITY
         holder.cardViewItem.setOnClickListener(object : View.OnClickListener {
 
             override fun onClick(v: View?) {
@@ -59,8 +65,22 @@ class LeagueItemAdapter(val context: Context, val items: ArrayList<String>):
                 // Get current item clicked
                 val item = items.get(position)
 
+                // Get league name
+                var leagueName: String = item
+
+                // Load in .csv file and retrieve games matching date only
+                val utils = Utils()
+                var gameList: ArrayList<Game> = utils.parseCsvFromAssets(context, "Games.csv")!!
+                var monthList: List<Game> = gameList.filter { s -> s.date == "2021-01-13" }
+
+                // Convert list to JSON to pass in Intent
+                val gson = Gson()
+                val dailyGamesJson: String = gson.toJson(monthList)
+
                 // Launch MapActivity
                 val intent = Intent(context, MapActivity::class.java)
+                intent.putExtra("league", leagueName)
+                intent.putExtra("gameList", dailyGamesJson)
                 context.startActivity(intent)
 
             }
