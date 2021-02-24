@@ -6,4 +6,10 @@
     <string name="settings">Settings</string>
     <string name="leaguesHeader">Leagues</string>
     <string name="findMatches">Find Matches</string>
+    <string name="titleCustomPH">Title</string>
+    <string name="team1CustomPH">Team 1</string>
+    <string name="team1GoalCustomPH">3</string>
+    <string name="team2CustomPH">Team 2</string>
+    <string name="team2GoalCustomPH">4</string>
+    <string name="gameEndingPH">OT</string>
 </resources>

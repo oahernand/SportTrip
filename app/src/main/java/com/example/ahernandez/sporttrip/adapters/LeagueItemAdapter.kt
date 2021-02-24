@@ -2,7 +2,6 @@ package com.example.ahernandez.sporttrip.adapters
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,6 @@ import com.example.ahernandez.sporttrip.R
 import com.example.ahernandez.sporttrip.Utils
 import com.example.ahernandez.sporttrip.model.Game
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 
 
 class LeagueItemAdapter(val context: Context, val items: ArrayList<String>):

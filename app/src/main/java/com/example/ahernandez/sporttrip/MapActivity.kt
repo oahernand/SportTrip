@@ -3,6 +3,7 @@ package com.example.ahernandez.sporttrip
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.example.ahernandez.sporttrip.model.CustomInfoWindow
 import com.example.ahernandez.sporttrip.model.Game
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -10,6 +11,7 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
@@ -98,7 +100,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Load the Teams data and store as a JSON Object
         val utils = Utils()
-        val teamsJson = utils.loadJsonFromAssets(this, "teams.json")
+        val teamsJson = utils.loadJsonFromAssets(this, "teamsNHL.json")
         val jsonObj = JSONObject(teamsJson)
 
         if (map != null) {
@@ -131,7 +133,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                             arenaInfo?.get(1)?.toDouble()?.let { LatLng(it, arenaInfo?.get(2).toDouble()) }?.let {
                                 MarkerOptions().position(it).title(
                                     arenaInfo?.get(0)
-                                )
+                                ).snippet("Sample snippet info - Currently Unused!")
                             }
                         ).getPosition()
                     )
@@ -147,6 +149,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             val width = resources.displayMetrics.widthPixels
             val height = resources.displayMetrics.heightPixels
             val padding = (height * 0.10).toInt()
+
+            // Create custom marker window info
+            map.setInfoWindowAdapter(CustomInfoWindow(this))
 
             // Move camera and zoom to calculated box
             val cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding)
