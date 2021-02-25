@@ -2,11 +2,16 @@ package com.example.ahernandez.sporttrip
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ahernandez.sporttrip.adapters.LeagueItemAdapter
+import com.example.ahernandez.sporttrip.model.Game
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.gson.Gson
 
 
 class SearchActivity : AppCompatActivity() {
@@ -71,7 +76,7 @@ class SearchActivity : AppCompatActivity() {
 
         // Inflate items
         recycler_view_items.adapter = itemAdapter
-
+        
 
     } // END onCreate()
 

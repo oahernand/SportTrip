@@ -9,7 +9,9 @@ class Game {
     var homeGoals: String? = null
     var ending: String? = null
 
-    constructor(date: String?, visitor: String?, visitorGoals: String?, home: String?, homeGoals: String?, ending: String?) {
+
+    constructor(date: String?, visitor: String?, visitorGoals: String?, home: String?,
+                homeGoals: String?, ending: String?) {
         this.date = date
         this.visitor = visitor
         this.visitorGoals = visitorGoals

@@ -3,7 +3,7 @@ package com.example.ahernandez.sporttrip
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.ahernandez.sporttrip.model.CustomInfoWindow
+import com.example.ahernandez.sporttrip.adapters.CustomInfoWindowAdapter
 import com.example.ahernandez.sporttrip.model.Game
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -11,7 +11,6 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
@@ -127,13 +126,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
 
+                    // Can not pass Object as Title or Snippet as it must be a String.
+                    // Converting Game object to JSON string. Will be passed in as Snippet.
+                    // Will be converted back to Game obj in Adapter.
+                    val gson = Gson()
+                    val gameInfoString: String = gson.toJson(game)
+
                     // Add marker to map
                     builder.include(
                         map.addMarker(
                             arenaInfo?.get(1)?.toDouble()?.let { LatLng(it, arenaInfo?.get(2).toDouble()) }?.let {
                                 MarkerOptions().position(it).title(
                                     arenaInfo?.get(0)
-                                ).snippet("Sample snippet info - Currently Unused!")
+                                ).snippet(gameInfoString)
                             }
                         ).getPosition()
                     )
@@ -151,7 +156,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             val padding = (height * 0.10).toInt()
 
             // Create custom marker window info
-            map.setInfoWindowAdapter(CustomInfoWindow(this))
+            map.setInfoWindowAdapter(CustomInfoWindowAdapter(this))
 
             // Move camera and zoom to calculated box
             val cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding)

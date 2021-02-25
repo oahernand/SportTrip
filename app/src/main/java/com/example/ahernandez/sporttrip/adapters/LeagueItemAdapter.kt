@@ -69,7 +69,7 @@ class LeagueItemAdapter(val context: Context, val items: ArrayList<String>):
                 // Load in .csv file and retrieve games matching date only
                 val utils = Utils()
                 var gameList: ArrayList<Game> = utils.parseCsvFromAssets(context, "Games.csv")!!
-                var monthList: List<Game> = gameList.filter { s -> s.date == "2021-01-13" }
+                var monthList: List<Game> = gameList.filter { s -> s.date == "2021-02-25" }
 
                 // Convert list to JSON to pass in Intent
                 val gson = Gson()
