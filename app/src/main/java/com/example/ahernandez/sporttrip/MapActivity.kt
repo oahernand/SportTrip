@@ -3,6 +3,11 @@ package com.example.ahernandez.sporttrip
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.ahernandez.sporttrip.adapters.CustomInfoWindowAdapter
 import com.example.ahernandez.sporttrip.model.Game
@@ -15,13 +20,27 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.json.JSONObject
+import java.util.stream.Collectors
 
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    /***************
+     *  VARIABLES  *
+     ***************/
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var mapViewGoogle: MapView
     private lateinit var allGamesArray: ArrayList<Game>
+    private lateinit var backupAllGames: ArrayList<Game>
+    private lateinit var filename: String
+    private var mMap: GoogleMap? = null
+
+    private lateinit var dialogBuilder: AlertDialog.Builder
+    private lateinit var dialog: AlertDialog
+
+    private lateinit var teamFromSpinner: String
+    private lateinit var dateFromSpinner: String
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,14 +51,23 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         actionBar?.hide()
 
         // Retrieve data passed in w Intent
-        var leagueName: String? = getIntent().getStringExtra("leagueName")
+        var leagueName: String? = getIntent().getStringExtra("league")
         var jsonList: String? = getIntent().getStringExtra("gameList")
+
+        // Set .json file to access
+        if (leagueName == "MLB") {
+            filename = "teamsMLB.json"
+        }
+        else {
+            filename = "teamsNHL.json"
+        }
+
 
         // Use GSON library to convert json to ArrayList
         val gson = Gson()
         val arrayTutorialType = object : TypeToken<ArrayList<Game>>() {}.type
         allGamesArray = gson.fromJson(jsonList, arrayTutorialType)
-
+        backupAllGames = allGamesArray
 
         // *** IMPORTANT ***
         // MapView requires that the Bundle you pass contain _ONLY_ MapView SDK
@@ -100,13 +128,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap?) {
 
+        // Initialize GoogleMap object to allow for redraw later
+        mMap = map;
+
         // Load the Teams data and store as a JSON Object
         val utils = Utils()
-        val teamsJson = utils.loadJsonFromAssets(this, "teamsNHL.json")
+        val teamsJson = utils.loadJsonFromAssets(this, filename)
         val jsonObj = JSONObject(teamsJson)
 
         if (map != null) {
 
+            map.clear()
             val builder = LatLngBounds.Builder()
 
             // Iterate through selected games
@@ -125,7 +157,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                     // Clean data - ArenaName[0]/Lat[1]/Long[2]
                     if (arenaInfo != null) {
                         for (i in arenaInfo.indices) {
-                            arenaInfo[i] = arenaInfo[i].substringBefore(",").substringBefore("}").replace("\"","")
+                            arenaInfo[i] = arenaInfo[i].substringBefore(",").substringBefore("}").replace("\"", "")
                         }
                     }
 
@@ -138,15 +170,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                     // Convert image for use as custom pin marker
                     var icon: BitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.hockey_pin)
 
+                    if (filename == "teamsMLB.json") {
+                        icon = BitmapDescriptorFactory.fromResource(R.drawable.baseball_pin)
+                    }
+
+
+
                     // Add marker to map
                     builder.include(
-                        map.addMarker(
-                            arenaInfo?.get(1)?.toDouble()?.let { LatLng(it, arenaInfo?.get(2).toDouble()) }?.let {
-                                MarkerOptions().position(it).title(
-                                    arenaInfo?.get(0)
-                                ).snippet(gameInfoString).icon(icon)
-                            }
-                        ).getPosition()
+                            map.addMarker(
+                                    arenaInfo?.get(1)?.toDouble()?.let { LatLng(it, arenaInfo?.get(2).toDouble()) }?.let {
+                                        MarkerOptions().position(it).title(
+                                                arenaInfo?.get(0)
+                                        ).snippet(gameInfoString).icon(icon)
+                                    }
+                            ).getPosition()
                     )
 
                 }
@@ -226,6 +264,173 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         private const val MAPVIEW_BUNDLE_KEY = "MapViewBundleKey"
     }
+
+
+    fun onFabClick(view: View) {
+
+        createDialog()
+
+    } // END onFabClick()
+
+    fun createDialog() {
+
+        // Create popup window
+        dialogBuilder = AlertDialog.Builder(this)
+        val view = layoutInflater.inflate(R.layout.filter_layout, null)
+
+        dialogBuilder.setView(view)
+        dialog = dialogBuilder.create()
+        dialog.show()
+
+        // Get a unique list of teams and dates for Spinners
+        var teamList: ArrayList<String> = ArrayList()
+        var dateList: ArrayList<String> = ArrayList()
+
+        for (game in allGamesArray) {
+            teamList.add(game.home.toString())
+            dateList.add(game.date.toString())
+        }
+
+        // Add a blank entry to prevent app from selecting first team/date by default
+        var uniqueList: MutableList<String>? = teamList.stream().distinct().collect(Collectors.toList())
+        teamList.clear()
+        teamList.add("")
+
+        // Get Team List
+        if (uniqueList != null) {
+            for (item in uniqueList) {
+                teamList.add(item)
+            }
+        }
+
+        // Add a blank entry to prevent app from selecting first team/date by default
+        uniqueList = dateList.stream().distinct().collect(Collectors.toList())
+        dateList.clear()
+        dateList.add("")
+
+        // Get Date List
+        if (uniqueList != null) {
+            for (item in uniqueList) {
+                dateList.add(item)
+            }
+        }
+
+
+
+        val teamSpinner: Spinner? = dialog.findViewById(R.id.teamsSpinner)
+        val dateSpinner: Spinner? = dialog.findViewById(R.id.dateSpinner)
+
+        // Set 'Teams' spinner adapter
+        val teamAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, teamList)
+        teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+
+        if (teamSpinner != null) {
+            teamSpinner.adapter = teamAdapter
+        }
+
+        if (teamSpinner != null) {
+            teamSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    TODO("Not yet implemented")
+
+                } // onNothingSelected()
+
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+
+                    if (parent != null) {
+                        teamFromSpinner = parent.getItemAtPosition(pos).toString()
+                    }
+
+                } // END onItemSelected()
+
+            } // END onItemSelectedListener
+
+        }
+
+
+
+        // Set 'Date' spinner adapter
+        val dateAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, dateList)
+        dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+
+        if (dateSpinner != null) {
+            dateSpinner.adapter = dateAdapter
+        }
+
+        if (dateSpinner != null) {
+            dateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    TODO("Not yet implemented")
+
+                } // END onNothingSelected()
+
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+                    if (parent != null) {
+                        dateFromSpinner = parent.getItemAtPosition(pos).toString()
+                    }
+
+                } // END onItemSelected()
+
+            } // END onItemSelectedListener
+
+        }
+
+
+    } // END createDialog()
+
+
+
+    fun filterBtnOnClick(view: View) {
+
+        // Filter results depending on Spinner selection
+        // Reset selection after filter applied
+        if (teamFromSpinner != "" && dateFromSpinner != "") {
+            allGamesArray = allGamesArray.filter {
+                it.date == dateFromSpinner && it.home == teamFromSpinner
+            } as ArrayList<Game>
+
+            teamFromSpinner = ""
+            dateFromSpinner = ""
+
+        }
+        else if (teamFromSpinner != "" && dateFromSpinner == "") {
+            allGamesArray = allGamesArray.filter {
+                it.home == teamFromSpinner || it.visitor == teamFromSpinner } as ArrayList<Game>
+            teamFromSpinner = ""
+
+        }
+        else if (teamFromSpinner == "" && dateFromSpinner != "") {
+            allGamesArray = allGamesArray.filter { s -> s.date == dateFromSpinner } as ArrayList<Game>
+            dateFromSpinner = ""
+
+        }
+
+        if (allGamesArray.size == 0) {
+
+            Toast.makeText(this, "No Matches Found! Resetting Filter.", Toast.LENGTH_SHORT).show()
+            allGamesArray = backupAllGames
+            dialog.dismiss()
+            createDialog()
+        }
+        else {
+            // Redraw map
+            onMapReady(mMap)
+            dialog.dismiss()
+        }
+
+    } // END filterBtnOnClick()
+
+
+
+    fun resetFilterBtnOnClick(view: View) {
+        allGamesArray = backupAllGames
+
+        dialog.dismiss()
+        createDialog()
+
+    } // END resetFilterBtnOnClick()
 
 
 

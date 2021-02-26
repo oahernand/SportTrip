@@ -28,6 +28,7 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var calendarView: CalendarView
     private lateinit var calendarDayPicked: String
     private var leagueName: String = "NHL"
+    private var filename: String = "Games.csv"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -168,6 +169,8 @@ class SearchActivity : AppCompatActivity() {
                 nhlBtn.setBackgroundColor(ContextCompat.getColor(this, R.color.Blue))
                 mlbBtn.setBackgroundColor(ContextCompat.getColor(this, R.color.MediumBlack))
 
+                filename = "Games.csv"
+
             }
 
             R.id.mlbBtn -> {
@@ -176,6 +179,8 @@ class SearchActivity : AppCompatActivity() {
                 // Change button colors
                 nhlBtn.setBackgroundColor(ContextCompat.getColor(this, R.color.MediumBlack))
                 mlbBtn.setBackgroundColor(ContextCompat.getColor(this, R.color.Blue))
+
+                filename = "MLB_games.csv"
 
             }
             else -> throw Exception()
@@ -189,7 +194,8 @@ class SearchActivity : AppCompatActivity() {
 
         // Load in .csv file and retrieve games matching date only
         val utils = Utils()
-        var gameList: ArrayList<Game> = utils.parseCsvFromAssets(this, "Games.csv")!!
+        //var gameList: ArrayList<Game> = utils.parseCsvFromAssets(this, "Games.csv")!!
+        var gameList: ArrayList<Game> = utils.parseCsvFromAssets(this, filename)!!
 
         var monthList: List<Game> = emptyList()
         var dateSet: ArrayList<String>

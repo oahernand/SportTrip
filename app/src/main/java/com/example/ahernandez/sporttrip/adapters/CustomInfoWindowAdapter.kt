@@ -22,6 +22,7 @@ class CustomInfoWindowAdapter(context: Context) : GoogleMap.InfoWindowAdapter {
         val tvTitle = view.findViewById<TextView>(R.id.titleTextView)
 
         // Variables represent matchup info
+        val tvDate = view.findViewById<TextView>(R.id.dateTextView)
         val tvTeam1 = view.findViewById<TextView>(R.id.team1TextView)
         val tvTeam1Goal = view.findViewById<TextView>(R.id.team1GoalTextView)
         val tvTeam2 = view.findViewById<TextView>(R.id.team2TextView)
@@ -36,8 +37,8 @@ class CustomInfoWindowAdapter(context: Context) : GoogleMap.InfoWindowAdapter {
         // Add Title
         tvTitle.text = marker.title
 
-        // TODO: ADD DATE AFTER LAYOUT.XML MODIFIED
         // Fill placeholders using Game obj values
+        tvDate.text = gameInfoObj.date
         tvTeam1.text = gameInfoObj.home
         tvTeam2.text = gameInfoObj.visitor
 
@@ -52,7 +53,7 @@ class CustomInfoWindowAdapter(context: Context) : GoogleMap.InfoWindowAdapter {
         }
 
         // Format accordingly
-        if (gameInfoObj.ending.isNullOrEmpty())
+        if (gameInfoObj.ending.isNullOrEmpty() && gameInfoObj.homeGoals.isNullOrEmpty() && gameInfoObj.visitorGoals.isNullOrEmpty())
             tvEnding.text = "7:00 PM (EST)"
         else
             tvEnding.text = gameInfoObj.ending

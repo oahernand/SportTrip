@@ -9,6 +9,7 @@
     <string name="mlbLeague">MLB</string>
     <string name="findMatches">Find Matches</string>
     <string name="titleCustomPH">Title</string>
+    <string name="dateCustomPH">Date</string>
     <string name="team1CustomPH">Team 1</string>
     <string name="team1GoalCustomPH">3</string>
     <string name="team2CustomPH">Team 2</string>

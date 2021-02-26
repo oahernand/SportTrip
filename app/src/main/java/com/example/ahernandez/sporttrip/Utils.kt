@@ -22,7 +22,7 @@ class Utils {
                     val line = row.toString().split(",").toTypedArray()
 
                     // Create Game object and add to list
-                    var aGame: Game = Game(line[0].replace("[", ""),line[1], line[2], line[3], line[4], line[5])
+                    var aGame: Game = Game(line[0].replace("[", ""),line[1], line[2], line[3], line[4], line[5].replace("]", ""))
                     gameList.add(aGame)
 
                 }
