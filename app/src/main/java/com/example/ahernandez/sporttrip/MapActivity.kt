@@ -2,6 +2,7 @@ package com.example.ahernandez.sporttrip
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.ahernandez.sporttrip.adapters.CustomInfoWindowAdapter
 import com.example.ahernandez.sporttrip.model.Game
@@ -9,9 +10,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -27,6 +26,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
+
+        // Hide status bar
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        actionBar?.hide()
 
         // Retrieve data passed in w Intent
         var leagueName: String? = getIntent().getStringExtra("leagueName")
@@ -132,13 +135,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                     val gson = Gson()
                     val gameInfoString: String = gson.toJson(game)
 
+                    // Convert image for use as custom pin marker
+                    var icon: BitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.hockey_pin)
+
                     // Add marker to map
                     builder.include(
                         map.addMarker(
                             arenaInfo?.get(1)?.toDouble()?.let { LatLng(it, arenaInfo?.get(2).toDouble()) }?.let {
                                 MarkerOptions().position(it).title(
                                     arenaInfo?.get(0)
-                                ).snippet(gameInfoString)
+                                ).snippet(gameInfoString).icon(icon)
                             }
                         ).getPosition()
                     )
@@ -197,7 +203,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onStop()
         mapViewGoogle.onStop()
     }
-
 
 
     override fun onPause() {
